@@ -1,0 +1,10 @@
+Flask
+gunicorn
+pandas
+requests
+qrcode
+Pillow
+itsdangerous
+Jinja2
+Werkzeug
+sqlite3-binary
