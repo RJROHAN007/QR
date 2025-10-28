@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - QR User System{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="color: #333; margin-bottom: 0.5rem;">📊 Admin Dashboard</h1>
+    <p style="color: #666;">Welcome, {{ session.admin_username }}!</p>
+</div>
+
+<div class="stats-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div class="stat-card" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border-left: 4px solid #007bff;">
+        <div style="font-size: 2.5rem; color: #007bff; margin-bottom: 0.5rem;">👥</div>
+        <h3 style="color: #333; margin-bottom: 0.5rem;">Total Users</h3>
+        <div style="font-size: 2rem; font-weight: bold; color: #007bff;">{{ stats.total_users }}</div>
+    </div>
+    
+    <div class="stat-card" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border-left: 4px solid #28a745;">
+        <div style="font-size: 2.5rem; color: #28a745; margin-bottom: 0.5rem;">🔐</div>
+        <h3 style="color: #333; margin-bottom: 0.5rem;">Recent Logins</h3>
+        <div style="font-size: 2rem; font-weight: bold; color: #28a745;">{{ stats.recent_logins }}</div>
+    </div>
+    
+    <div class="stat-card" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border-left: 4px solid #ffc107;">
+        <div style="font-size: 2.5rem; color: #ffc107; margin-bottom: 0.5rem;">⏰</div>
+        <h3 style="color: #333; margin-bottom: 0.5rem;">Renewal Soon</h3>
+        <div style="font-size: 2rem; font-weight: bold; color: #ffc107;">{{ stats.renewal_soon }}</div>
+    </div>
+</div>
+
+<div class="quick-actions" style="text-align: center; margin-bottom: 3rem;">
+    <h2 style="color: #333; margin-bottom: 1.5rem;">Quick Actions</h2>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('admin_users') }}" class="btn">👥 Manage Users</a>
+        <a href="{{ url_for('admin_add_user') }}" class="btn btn-success">➕ Add New User</a>
+        <a href="{{ url_for('admin_bulk_edit') }}" class="btn" style="background: #17a2b8;">⚡ Bulk Edit</a>
+        <a href="{{ url_for('generate_qr_codes') }}" class="btn" style="background: #6c757d;">📱 Generate QR Codes</a>
+    </div>
+</div>
+
+<div class="recent-users" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <h2 style="color: #333; margin-bottom: 1.5rem;">Recent Users</h2>
+    {% if users %}
+    <div class="users-list">
+        {% for user in users[:5] %}
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-bottom: 1px solid #e9ecef;">
+            <div>
+                <strong>{{ user.name }}</strong>
+                <div style="color: #666; font-size: 0.9rem;">ID: {{ user.member_id }}</div>
+                <div style="color: #888; font-size: 0.8rem;">
+                    <span style="background: {% if user.membership_type == 'lifetime' %}#28a745{% else %}#007bff{% endif %}; 
+                          color: white; padding: 0.1rem 0.4rem; border-radius: 8px;">
+                        {{ user.membership_type|title }}
+                    </span>
+                </div>
+            </div>
+            <a href="{{ url_for('login', member_id=user.member_id) }}" class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                Test Login
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p style="color: #666; text-align: center; padding: 2rem;">No users found in database.</p>
+    {% endif %}
+</div>
+{% endblock %}

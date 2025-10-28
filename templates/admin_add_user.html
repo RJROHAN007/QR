@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block title %}Add User - QR User System{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="form-header" style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: #333; margin-bottom: 0.5rem;">➕ Add New User</h1>
+        <p style="color: #666;">Create a new user account</p>
+    </div>
+
+    <form method="POST" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <label for="member_id" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Member ID *</label>
+                <input type="text" id="member_id" name="member_id" 
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                       required>
+            </div>
+            <div>
+                <label for="name" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Full Name *</label>
+                <input type="text" id="name" name="name" 
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                       required>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <label for="date_of_birth" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Date of Birth</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" 
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+            </div>
+            <div>
+                <label for="blood_group" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Blood Group</label>
+                <select id="blood_group" name="blood_group" style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="phone" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Phone/WhatsApp</label>
+            <input type="tel" id="phone" name="phone" 
+                   style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="address" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Address</label>
+            <textarea id="address" name="address" rows="3"
+                      style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem; resize: vertical;"></textarea>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="image_path" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Google Drive Image URL</label>
+            <input type="url" id="image_path" name="image_path" 
+                   style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                   placeholder="https://drive.google.com/...">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <label for="membership_type" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Membership Type *</label>
+                <select id="membership_type" name="membership_type" 
+                        style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                        required onchange="toggleRenewalDate()">
+                    <option value="annually">Annually</option>
+                    <option value="lifetime">Lifetime</option>
+                </select>
+            </div>
+            <div>
+                <label for="membership_joining_date" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Joining Date *</label>
+                <input type="date" id="membership_joining_date" name="membership_joining_date" 
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                       required>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="password" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Password</label>
+            <input type="text" id="password" name="password" value="123456"
+                   style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+            <small style="color: #666;">Default password is 123456</small>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <a href="{{ url_for('admin_users') }}" 
+               style="padding: 0.75rem 1.5rem; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.3s;">
+                Cancel
+            </a>
+            <button type="submit" 
+                    style="padding: 0.75rem 1.5rem; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.3s;">
+                Add User
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleRenewalDate() {
+    const membershipType = document.getElementById('membership_type').value;
+    const renewalDateField = document.getElementById('membership_renewal_date');
+    
+    if (membershipType === 'lifetime') {
+        renewalDateField.disabled = true;
+        renewalDateField.value = '2099-12-31';
+    } else {
+        renewalDateField.disabled = false;
+        renewalDateField.value = '';
+    }
+}
+
+// Set today's date as default for joining date
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('membership_joining_date').value = today;
+    toggleRenewalDate();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+{% block title %}Generate QR Codes - QR User System{% endblock %}
+
+{% block content %}
+<div style="max-width: 1400px; margin: 0 auto;">
+    <div class="header" style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="color: #333; margin-bottom: 1rem;">📱 Generate User QR Codes</h1>
+        <p style="color: #666; font-size: 1.1rem;">QR codes for all registered users</p>
+
+        {% if session.get('is_admin') %}
+        <div style="margin-top: 1rem;">
+            <a href="{{ url_for('admin_users') }}" class="btn">👥 Manage Users</a>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn" style="background: #6c757d;">📊 Admin Dashboard</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Search and Filter Section -->
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h3 style="color: #333; margin-bottom: 1rem;">🔍 Search & Filter Users</h3>
+        <form method="GET" action="{{ url_for('generate_qr_codes') }}" style="display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 1rem; align-items: end;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Search by Name, ID, or Phone:</label>
+                <input type="text" name="search" value="{{ search_term }}"
+                       placeholder="Search users..."
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Blood Group:</label>
+                <select name="blood_group" style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                    <option value="">All Blood Groups</option>
+                    <option value="A+" {% if blood_filter == 'A+' %}selected{% endif %}>A+</option>
+                    <option value="A-" {% if blood_filter == 'A-' %}selected{% endif %}>A-</option>
+                    <option value="B+" {% if blood_filter == 'B+' %}selected{% endif %}>B+</option>
+                    <option value="B-" {% if blood_filter == 'B-' %}selected{% endif %}>B-</option>
+                    <option value="O+" {% if blood_filter == 'O+' %}selected{% endif %}>O+</option>
+                    <option value="O-" {% if blood_filter == 'O-' %}selected{% endif %}>O-</option>
+                    <option value="AB+" {% if blood_filter == 'AB+' %}selected{% endif %}>AB+</option>
+                    <option value="AB-" {% if blood_filter == 'AB-' %}selected{% endif %}>AB-</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Membership Type:</label>
+                <select name="membership_type" style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                    <option value="">All Types</option>
+                    <option value="lifetime" {% if membership_filter == 'lifetime' %}selected{% endif %}>Lifetime</option>
+                    <option value="annually" {% if membership_filter == 'annually' %}selected{% endif %}>Annually</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit"
+                        style="padding: 0.75rem 1.5rem; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; height: 48px;">
+                    🔍 Apply Filters
+                </button>
+            </div>
+        </form>
+
+        {% if search_term or blood_filter or membership_filter %}
+        <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <p style="color: #666; margin: 0;">
+                Found {{ qr_codes|length }} results
+                {% if search_term %} for "{{ search_term }}"{% endif %}
+                {% if blood_filter %} with blood group {{ blood_filter }}{% endif %}
+                {% if membership_filter %} with {{ membership_filter }} membership{% endif %}
+            </p>
+            <a href="{{ url_for('generate_qr_codes') }}"
+               style="padding: 0.5rem 1rem; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Clear Filters
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bulk Actions Section -->
+    {% if qr_codes %}
+    <div style="background: #e7f3ff; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #007bff;">
+        <h4 style="color: #0056b3; margin-bottom: 1rem;">🚀 Bulk QR Code Actions</h4>
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button onclick="downloadAllQR()"
+                    style="padding: 0.75rem 1.5rem; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                📥 Download All QR Codes (ZIP)
+            </button>
+            <button onclick="downloadSelectedQR()"
+                    style="padding: 0.75rem 1.5rem; background: #17a2b8; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                📥 Download Selected QR Codes
+            </button>
+            <button onclick="printAllQR()"
+                    style="padding: 0.75rem 1.5rem; background: #6c757d; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                🖨️ Print All QR Codes
+            </button>
+        </div>
+        <p style="color: #0056b3; margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+            Selected: <span id="selectedQRCount">0</span> QR codes
+            <label style="margin-left: 1rem;">
+                <input type="checkbox" id="selectAllQR" onchange="toggleAllQR(this)"> Select All
+            </label>
+        </p>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error" style="text-align: center;">
+        {{ error }}
+    </div>
+    {% endif %}
+
+    {% if qr_codes %}
+    <div class="qr-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 2rem; padding: 1rem;">
+        {% for qr in qr_codes %}
+        <div class="qr-card" style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center; border: 1px solid #e9ecef;">
+            <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                <input type="checkbox" class="qr-checkbox" value="{{ qr.member_id }}" onchange="updateQRSelection()"
+                       style="margin-right: 0.5rem;">
+                <div class="user-info" style="flex: 1;">
+                    <h3 style="color: #333; margin-bottom: 0.5rem;">{{ qr.name }}</h3>
+                    <div style="color: #666; font-weight: bold;">ID: {{ qr.member_id }}</div>
+                </div>
+            </div>
+
+            <div class="qr-code" style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <img src="data:image/png;base64,{{ qr.qr_code }}"
+                     alt="QR Code for {{ qr.name }}"
+                     style="max-width: 100%; height: auto; border: 1px solid #dee2e6;"
+                     id="qr-{{ qr.member_id }}">
+            </div>
+
+            <div class="action-buttons" style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                <button onclick="downloadSingleQR('{{ qr.member_id }}', '{{ qr.name }}')"
+                        class="btn" style="padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    📥 Download
+                </button>
+                {% if session.get('is_admin') %}
+                <a href="{{ url_for('admin_view_profile', member_id=qr.member_id) }}" class="btn" style="background: #17a2b8; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    👁️ View Profile
+                </a>
+                {% else %}
+                <a href="{{ url_for('login', member_id=qr.member_id) }}" class="btn" style="background: #28a745; padding: 0.5rem 1rem; font-size: 0.9rem;">
+                    🔗 Login
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="login-url" style="margin-top: 1rem; font-size: 0.8rem; color: #888; word-break: break-all; background: #f8f9fa; padding: 0.5rem; border-radius: 4px;">
+                {{ qr.login_url }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-users" style="text-align: center; padding: 3rem;">
+        <h3 style="color: #666; margin-bottom: 1rem;">No users found</h3>
+        <p style="color: #888; margin-bottom: 2rem;">Add users through the admin panel to generate QR codes</p>
+        {% if not session.get('is_admin') %}
+        <a href="{{ url_for('admin_login') }}" class="btn">🔐 Admin Login</a>
+        {% else %}
+        <a href="{{ url_for('admin_users') }}" class="btn">👥 Add Users</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// QR Code Selection Management
+function toggleAllQR(source) {
+    const checkboxes = document.getElementsByClassName('qr-checkbox');
+    for (let checkbox of checkboxes) {
+        checkbox.checked = source.checked;
+    }
+    updateQRSelection();
+}
+
+function updateQRSelection() {
+    const selectedCount = document.querySelectorAll('.qr-checkbox:checked').length;
+    document.getElementById('selectedQRCount').textContent = selectedCount;
+
+    // Update select all checkbox
+    const totalCheckboxes = document.querySelectorAll('.qr-checkbox').length;
+    const selectAll = document.getElementById('selectAllQR');
+    if (selectedCount === totalCheckboxes) {
+        selectAll.checked = true;
+        selectAll.indeterminate = false;
+    } else if (selectedCount > 0) {
+        selectAll.checked = false;
+        selectAll.indeterminate = true;
+    } else {
+        selectAll.checked = false;
+        selectAll.indeterminate = false;
+    }
+}
+
+// Single QR Download
+function downloadSingleQR(memberId, userName) {
+    const qrImage = document.getElementById('qr-' + memberId);
+    if (!qrImage) {
+        alert('QR Code not found!');
+        return;
+    }
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+
+    img.onload = function() {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+
+        const link = document.createElement('a');
+        link.download = `QR_${memberId}_${userName.replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    };
+
+    img.onerror = function() {
+        alert('Error loading QR code image');
+    };
+
+    img.src = qrImage.src;
+}
+
+// Bulk QR Download Functions
+function downloadSelectedQR() {
+    const selectedCheckboxes = document.querySelectorAll('.qr-checkbox:checked');
+    if (selectedCheckboxes.length === 0) {
+        alert('Please select at least one QR code to download.');
+        return;
+    }
+
+    if (selectedCheckboxes.length > 50) {
+        if (!confirm(`You are about to download ${selectedCheckboxes.length} QR codes. This may take a while. Continue?`)) {
+            return;
+        }
+    }
+
+    // Download selected QR codes one by one
+    selectedCheckboxes.forEach((checkbox, index) => {
+        setTimeout(() => {
+            const memberId = checkbox.value;
+            const userName = checkbox.closest('.qr-card').querySelector('h3').textContent;
+            downloadSingleQR(memberId, userName);
+        }, index * 100); // Stagger downloads to avoid browser issues
+    });
+}
+
+function downloadAllQR() {
+    if (!confirm('This will download all QR codes as individual files. Continue?')) {
+        return;
+    }
+
+    const allCheckboxes = document.querySelectorAll('.qr-checkbox');
+    allCheckboxes.forEach((checkbox, index) => {
+        setTimeout(() => {
+            const memberId = checkbox.value;
+            const userName = checkbox.closest('.qr-card').querySelector('h3').textContent;
+            downloadSingleQR(memberId, userName);
+        }, index * 100);
+    });
+}
+
+function printAllQR() {
+    window.print();
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateQRSelection();
+});
+</script>
+
+<style>
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    .qr-grid {
+        display: block !important;
+    }
+    .qr-card {
+        break-inside: avoid;
+        margin-bottom: 20px;
+    }
+}
+</style>
+{% endblock %}

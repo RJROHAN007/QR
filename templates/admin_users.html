@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - QR User System{% endblock %}
+
+{% block content %}
+<div class="users-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+        <h1 style="color: #333; margin-bottom: 0.5rem;">👥 Manage Users</h1>
+        <p style="color: #666;">Add, edit, or delete users in the system</p>
+    </div>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ url_for('admin_add_user') }}" class="btn btn-success">➕ Add New User</a>
+        <a href="{{ url_for('admin_bulk_edit') }}" class="btn" style="background: #17a2b8;">⚡ Bulk Edit</a>
+        <a href="{{ url_for('generate_qr_codes') }}" class="btn">📱 Generate QR Codes</a>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn" style="background: #6c757d;">📊 Dashboard</a>
+    </div>
+</div>
+
+<div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h3 style="color: #333; margin-bottom: 1rem;">🔍 Search Users</h3>
+        <form method="GET" action="{{ url_for('admin_users') }}" style="display: flex; gap: 1rem; align-items: center;">
+            <input type="text" name="search" value="{{ search_term }}"
+                   placeholder="Search by name, member ID, or phone number..."
+                   style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+            <button type="submit"
+                    style="padding: 0.75rem 1.5rem; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                Search
+            </button>
+            {% if search_term %}
+            <a href="{{ url_for('admin_users') }}"
+               style="padding: 0.75rem 1.5rem; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+        {% if search_term %}
+        <p style="color: #666; margin-top: 0.5rem;">
+            Found {{ users|length }} results for "{{ search_term }}"
+        </p>
+        {% endif %}
+    </div>
+
+
+<!-- Excel Import Form -->
+<div style="background: #e7f3ff; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem; border-left: 4px solid #007bff;">
+    <h3 style="color: #007bff; margin: 0 0 1rem 0;">📊 Import Users from Excel</h3>
+    <form action="{{ url_for('admin_import_excel') }}" method="POST" enctype="multipart/form-data" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <input type="file" name="excel_file" accept=".xlsx" required style="flex: 1; min-width: 200px;">
+        <button type="submit" class="btn">📥 Import Excel</button>
+    </form>
+    <p style="color: #666; margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+        Excel file should match the sample format with Member Id, Name, Date of Birth, Address, Blood Group, WhatsApp Number, and Image Path
+    </p>
+</div>
+
+{% if users %}
+<div class="users-table" style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="background: #f8f9fa;">
+                <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Member ID</th>
+                <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Name</th>
+                <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Phone</th>
+                <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Blood Group</th>
+                <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Membership Type</th>
+                <th style="padding: 1rem; text-align: left; border-bottom: 2px solid #dee2e6;">Renewal Date</th>
+                <th style="padding: 1rem; text-align: center; border-bottom: 2px solid #dee2e6;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr style="border-bottom: 1px solid #e9ecef;">
+                <td style="padding: 1rem;"><strong>{{ user.member_id }}</strong></td>
+                <td style="padding: 1rem;">{{ user.name }}</td>
+                <td style="padding: 1rem;">{{ user.phone or '-' }}</td>
+                <td style="padding: 1rem;">{{ user.blood_group or '-' }}</td>
+                <td style="padding: 1rem;">
+                    <span style="background: {% if user.membership_type == 'lifetime' %}#28a745{% else %}#007bff{% endif %}; 
+                          color: white; padding: 0.25rem 0.5rem; border-radius: 12px; font-size: 0.8rem;">
+                        {{ user.membership_type|title or 'Annually' }}
+                    </span>
+                </td>
+                <td style="padding: 1rem;">
+                    {% if user.membership_type == 'lifetime' %}
+                        <span style="color: #28a745;">Lifetime</span>
+                    {% else %}
+                        {{ user.membership_renewal_date or '-' }}
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem; text-align: center;">
+                    <div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap;">
+                        <a href="{{ url_for('admin_view_profile', member_id=user.member_id) }}"
+                            class="btn"
+                            style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #17a2b8;"
+                            target="_blank">
+                             View Profile
+                        </a>
+                        <a href="{{ url_for('admin_edit_user', member_id=user.member_id) }}"
+                           class="btn"
+                           style="padding: 0.5rem 1rem; font-size: 0.9rem; background: #ffc107;">
+                            Edit
+                        </a>
+                        <a href="{{ url_for('admin_delete_user', member_id=user.member_id) }}"
+                           class="btn btn-danger"
+                           style="padding: 0.5rem 1rem; font-size: 0.9rem;"
+                           onclick="return confirm('Are you sure you want to delete user {{ user.name }} ({{ user.member_id }})? This action cannot be undone.')">
+                            Delete
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="no-users" style="text-align: center; padding: 3rem; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <h3 style="color: #666; margin-bottom: 1rem;">No users found</h3>
+    <p style="color: #888; margin-bottom: 2rem;">Add users to get started with the QR system</p>
+    <a href="{{ url_for('admin_add_user') }}" class="btn btn-success">➕ Add First User</a>
+</div>
+{% endif %}
+{% endblock %}

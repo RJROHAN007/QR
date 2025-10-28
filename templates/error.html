@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Error - QR User System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+        .error-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        p {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 0 0.5rem;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-home {
+            background: #28a745;
+        }
+        .btn-home:hover {
+            background: #218838;
+        }
+        .btn-admin {
+            background: #6c757d;
+        }
+        .btn-admin:hover {
+            background: #5a6268;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">❌</div>
+        <h1>Oops! Something went wrong</h1>
+        <p>{{ error }}</p>
+        <div>
+            <a href="/" class="btn btn-home">🏠 Go Home</a>
+            <a href="/generate-qr-codes" class="btn">📱 QR Generator</a>
+            {% if session.get('is_admin') %}
+            <a href="/admin/dashboard" class="btn btn-admin">📊 Admin Dashboard</a>
+            {% else %}
+            <a href="/admin/login" class="btn btn-admin">🔐 Admin Login</a>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

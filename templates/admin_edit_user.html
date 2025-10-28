@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Edit User - QR User System{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="form-header" style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: #333; margin-bottom: 0.5rem;">✏️ Edit User</h1>
+        <p style="color: #666;">Update user information</p>
+    </div>
+
+    <form method="POST" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <div style="margin-bottom: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Member ID</label>
+            <input type="text" value="{{ user.member_id }}" readonly
+                   style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem; background: #f8f9fa;">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <label for="name" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Full Name *</label>
+                <input type="text" id="name" name="name" value="{{ user.name }}"
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                       required>
+            </div>
+            <div>
+                <label for="date_of_birth" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Date of Birth</label>
+                <input type="date" id="date_of_birth" name="date_of_birth" value="{{ user.date_of_birth or '' }}"
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <label for="blood_group" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Blood Group</label>
+                <select id="blood_group" name="blood_group" style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                    <option value="">Select Blood Group</option>
+                    <option value="A+" {% if user.blood_group == 'A+' %}selected{% endif %}>A+</option>
+                    <option value="A-" {% if user.blood_group == 'A-' %}selected{% endif %}>A-</option>
+                    <option value="B+" {% if user.blood_group == 'B+' %}selected{% endif %}>B+</option>
+                    <option value="B-" {% if user.blood_group == 'B-' %}selected{% endif %}>B-</option>
+                    <option value="O+" {% if user.blood_group == 'O+' %}selected{% endif %}>O+</option>
+                    <option value="O-" {% if user.blood_group == 'O-' %}selected{% endif %}>O-</option>
+                    <option value="AB+" {% if user.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                    <option value="AB-" {% if user.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                </select>
+            </div>
+            <div>
+                <label for="phone" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Phone/WhatsApp</label>
+                <input type="tel" id="phone" name="phone" value="{{ user.phone or '' }}"
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="address" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Address</label>
+            <textarea id="address" name="address" rows="3"
+                      style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem; resize: vertical;">{{ user.address or '' }}</textarea>
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="image_path" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Google Drive Image URL</label>
+            <input type="url" id="image_path" name="image_path" value="{{ user.image_path or '' }}"
+                   style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                   placeholder="https://drive.google.com/...">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <div>
+                <label for="membership_type" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Membership Type *</label>
+                <select id="membership_type" name="membership_type" 
+                        style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                        required onchange="toggleRenewalDate()">
+                    <option value="annually" {% if user.membership_type == 'annually' %}selected{% endif %}>Annually</option>
+                    <option value="lifetime" {% if user.membership_type == 'lifetime' %}selected{% endif %}>Lifetime</option>
+                </select>
+            </div>
+            <div>
+                <label for="membership_joining_date" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Joining Date *</label>
+                <input type="date" id="membership_joining_date" name="membership_joining_date" value="{{ user.membership_joining_date or '' }}"
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                       required>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <a href="{{ url_for('admin_users') }}" 
+               style="padding: 0.75rem 1.5rem; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.3s;">
+                Cancel
+            </a>
+            <button type="submit" 
+                    style="padding: 0.75rem 1.5rem; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.3s;">
+                Update User
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleRenewalDate() {
+    const membershipType = document.getElementById('membership_type').value;
+    const renewalDateField = document.getElementById('membership_renewal_date');
+    
+    if (membershipType === 'lifetime') {
+        if (renewalDateField) {
+            renewalDateField.disabled = true;
+            renewalDateField.value = '2099-12-31';
+        }
+    } else {
+        if (renewalDateField) {
+            renewalDateField.disabled = false;
+        }
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleRenewalDate();
+});
+</script>
+{% endblock %}

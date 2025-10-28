@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk Edit Users - QR User System{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="form-header" style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="color: #333; margin-bottom: 0.5rem;">⚡ Bulk Edit Users</h1>
+        <p style="color: #666;">Update multiple users at once</p>
+    </div>
+
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+        <h3 style="color: #333; margin-bottom: 1rem;">🔍 Search Users</h3>
+        <form method="GET" action="{{ url_for('admin_bulk_edit') }}" style="display: flex; gap: 1rem; align-items: center;">
+            <input type="text" name="search" value="{{ search_term }}"
+                   placeholder="Search by name, member ID, or phone number..."
+                   style="flex: 1; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+            <button type="submit"
+                    style="padding: 0.75rem 1.5rem; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;">
+                Search
+            </button>
+            {% if search_term %}
+            <a href="{{ url_for('admin_bulk_edit') }}"
+               style="padding: 0.75rem 1.5rem; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+        {% if search_term %}
+        <p style="color: #666; margin-top: 0.5rem;">
+            Found {{ users|length }} results for "{{ search_term }}"
+        </p>
+        {% endif %}
+    </div>
+
+
+    <form method="POST" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+        <div style="margin-bottom: 2rem;">
+            <h3 style="color: #333; margin-bottom: 1rem;">Select Users to Update</h3>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 1rem;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8f9fa;">
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">
+                                <input type="checkbox" id="select-all" onchange="toggleSelectAll(this)">
+                            </th>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Member ID</th>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Name</th>
+                            <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #dee2e6;">Current Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr style="border-bottom: 1px solid #dee2e6;">
+                            <td style="padding: 0.75rem;">
+                                <input type="checkbox" name="member_ids" value="{{ user.member_id }}" class="user-checkbox">
+                            </td>
+                            <td style="padding: 0.75rem;">{{ user.member_id }}</td>
+                            <td style="padding: 0.75rem;">{{ user.name }}</td>
+                            <td style="padding: 0.75rem;">
+                                <span class="badge {% if user.membership_type == 'lifetime' %}badge-success{% else %}badge-primary{% endif %}">
+                                    {{ user.membership_type or 'annually' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 2rem;">
+            <h3 style="color: #333; margin-bottom: 1rem;">Update Field</h3>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+                <div>
+                    <label for="field" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">Field to Update *</label>
+                    <select id="field" name="field" 
+                            style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                            required onchange="updateValueField()">
+                        <option value="">Select Field</option>
+                        <option value="membership_type">Membership Type</option>
+                        <option value="blood_group">Blood Group</option>
+                        <option value="address">Address</option>
+                    </select>
+                </div>
+                <div id="value-container">
+                    <label for="value" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">New Value *</label>
+                    <input type="text" id="value" name="value" 
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                           required>
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #e7f3ff; padding: 1rem; border-radius: 6px; margin-bottom: 2rem;">
+            <h4 style="color: #0056b3; margin-bottom: 0.5rem;">⚠️ Important Note</h4>
+            <p style="color: #0056b3; margin: 0; font-size: 0.9rem;">
+                This action will update the selected field for all chosen users. Membership type changes will automatically update renewal dates.
+            </p>
+        </div>
+
+        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+            <a href="{{ url_for('admin_users') }}" 
+               style="padding: 0.75rem 1.5rem; background: #6c757d; color: white; text-decoration: none; border-radius: 6px; font-weight: bold; transition: background 0.3s;">
+                Cancel
+            </a>
+            <button type="submit" 
+                    style="padding: 0.75rem 1.5rem; background: #28a745; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.3s;">
+                Update Selected Users
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleSelectAll(source) {
+    const checkboxes = document.getElementsByClassName('user-checkbox');
+    for (let checkbox of checkboxes) {
+        checkbox.checked = source.checked;
+    }
+}
+
+function updateValueField() {
+    const field = document.getElementById('field').value;
+    const valueContainer = document.getElementById('value-container');
+    
+    if (field === 'membership_type') {
+        valueContainer.innerHTML = `
+            <label for="value" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">New Value *</label>
+            <select id="value" name="value" style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                <option value="annually">Annually</option>
+                <option value="lifetime">Lifetime</option>
+            </select>
+        `;
+    } else if (field === 'blood_group') {
+        valueContainer.innerHTML = `
+            <label for="value" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">New Value *</label>
+            <select id="value" name="value" style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;" required>
+                <option value="">Select Blood Group</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+            </select>
+        `;
+    } else {
+        valueContainer.innerHTML = `
+            <label for="value" style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #333;">New Value *</label>
+            <input type="text" id="value" name="value" 
+                   style="width: 100%; padding: 0.75rem; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;"
+                   required>
+        `;
+    }
+}
+</script>
+{% endblock %}

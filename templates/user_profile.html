@@ -1,0 +1,146 @@
+{% extends 'user_base.html' %}
+{% block title %}{{ user.name }} - Member Profile{% endblock %}
+
+{% block header_action %}
+<a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
+{% endblock %}
+
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile_custom.css') }}">
+
+<div class="profile-wrapper">
+  <header class="profile-header">
+    <h1>Mariners Arena Member Profile</h1>
+  </header>
+
+  <section class="profile-card">
+    <div class="profile-top">
+      {% if image_path %}
+        <img src="{{ image_path }}" alt="{{ user.name }}" class="profile-pic" onerror="this.style.display='none'">
+      {% else %}
+        <div class="profile-placeholder">👤</div>
+      {% endif %}
+
+      <div class="profile-main-info">
+        <h2>{{ user.name }}</h2>
+        <p>ID: {{ user.member_id }}</p>
+        <div class="badges">
+          <span class="badge badge-type">{{ user.membership_type|title }}</span>
+          <span class="badge badge-joined">Joined: {{ user.membership_joining_date or 'Not specified' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="profile-details">
+      <h3>Personal & Membership Info</h3>
+      <table>
+        <tr><td>Full Name:</td><td>{{ user.name }}</td></tr>
+        <tr><td>Member ID:</td><td>{{ user.member_id }}</td></tr>
+        <tr><td>Phone:</td><td>{{ user.phone or 'Not specified' }}</td></tr>
+        <tr><td>Email:</td><td>{{ user.email or 'Not specified' }}</td></tr>
+        <tr><td>Blood Group:</td><td>{{ user.blood_group or 'Not specified' }}</td></tr>
+        <tr><td>Membership Type:</td><td>{{ user.membership_type|title }}</td></tr>
+        <tr><td>Joining Date:</td><td>{{ user.membership_joining_date or 'Not specified' }}</td></tr>
+        <tr>
+          <td>Renewal Date:</td>
+          <td>
+            {% if user.membership_type == 'lifetime' %}
+              Lifetime (Never Expires)
+            {% else %}
+              {{ user.membership_renewal_date or 'Not specified' }}
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    {% if user.address %}
+    <div class="profile-details">
+      <h3>Address</h3>
+      <p>{{ user.address }}</p>
+    </div>
+    {% endif %}
+
+    <div class="profile-qr">
+      <h3>Your Login QR Code</h3>
+      {% if qr_code %}
+        <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" id="profileQR">
+        <p>Scan this QR to quickly login to your profile.</p>
+      {% else %}
+        <p class="text-red">QR Code not available.</p>
+      {% endif %}
+    </div>
+
+    <div class="profile-actions">
+      <button onclick="printProfile()">🖨️ Print</button>
+      <button onclick="downloadQR()">📥 Download QR</button>
+      <a href="{{ url_for('logout') }}">🚪 Logout</a>
+    </div>
+
+    <div class="password-section">
+      <h3>🔒 Change Password</h3>
+      <form action="{{ url_for('change_own_password') }}" method="POST" onsubmit="return validatePasswordChange()" id="passwordChangeForm">
+        <input type="hidden" name="member_id" value="{{ user.member_id }}">
+        <label>Current Password</label>
+        <input type="password" name="current_password" required>
+        <label>New Password</label>
+        <input type="password" name="new_password" id="new_password" required minlength="6">
+        <label>Confirm Password</label>
+        <input type="password" name="confirm_password" id="confirm_password" required minlength="6">
+        <button type="submit">Change Password</button>
+        <div id="passwordError" class="error hidden"></div>
+      </form>
+    </div>
+
+    <footer class="profile-footer">
+      {% if user.membership_type == 'lifetime' %}
+        Lifetime Membership — No Renewal Needed
+      {% else %}
+        Renewal Due: {{ user.membership_renewal_date or 'Not specified' }} — {{ user.membership_type|title }}
+      {% endif %}
+    </footer>
+  </section>
+</div>
+
+<script>
+function printProfile() {
+  const content = document.querySelector('.profile-wrapper').outerHTML;
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html><head><title>{{ user.name }} - Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile_custom.css') }}">
+    </head><body>${content}</body></html>
+  `);
+  printWindow.document.close();
+  printWindow.onload = () => { printWindow.print(); };
+}
+
+function downloadQR() {
+  const qr = document.getElementById('profileQR');
+  if (!qr) return alert('QR Code not available');
+  const link = document.createElement('a');
+  link.download = 'QRCode_{{ user.member_id }}.png';
+  link.href = qr.src;
+  link.click();
+}
+
+function validatePasswordChange() {
+  const newPass = document.getElementById('new_password').value;
+  const confirm = document.getElementById('confirm_password').value;
+  const error = document.getElementById('passwordError');
+  error.classList.add('hidden');
+  if (newPass.length < 6) {
+    error.textContent = 'Password must be at least 6 characters.';
+    error.classList.remove('hidden');
+    return false;
+  }
+  if (newPass !== confirm) {
+    error.textContent = 'Passwords do not match.';
+    error.classList.remove('hidden');
+    return false;
+  }
+  return confirm('Are you sure you want to change your password?');
+}
+</script>
+{% endblock %}

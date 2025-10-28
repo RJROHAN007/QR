@@ -1,0 +1,43 @@
+{% extends 'user_base.html' %}
+{% block title %}Login - {{ user.name }}{% endblock %}
+
+{% block header_title %}
+<h1 style="margin: 0; font-size: 1.8rem;">Welcome Mariners Arena</h1>
+{% endblock %}
+
+{% block content %}
+<div class="login-container"
+     style="max-width: 400px; margin: 60px auto; background: white; border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); padding: 2rem; text-align: center;">
+    <h2 style="color: #007bff; margin-bottom: 1rem;">Welcome, {{ user.name }}!</h2>
+    <p style="color: #6c757d;">Please enter your password to continue.</p>
+
+    {% if error %}
+    <div style="background: #f8d7da; color: #721c24; padding: 0.75rem; border-radius: 5px; margin-bottom: 1rem;">
+        ⚠️ {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('login', member_id=user.member_id) }}" style="margin-top: 1rem;">
+        <div style="margin-bottom: 1rem;">
+        <label for="member_id" style="font-weight: bold;">Member ID:</label>
+        <input type="text" id="member_id" name="member_id"
+               value="{{ user.member_id }}" readonly
+               style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; background: #e9ecef;">
+        </div>
+        <div style="margin-bottom: 1rem;">
+            <input type="password" name="password" placeholder="Enter Password"
+                   required style="width: 100%; padding: 0.75rem; border-radius: 5px; border: 1px solid #ced4da;">
+        </div>
+        <button type="submit"
+                style="background: #007bff; color: white; border: none; padding: 0.75rem 1.5rem;
+                       border-radius: 5px; cursor: pointer; font-weight: bold;">
+            🔐 Login
+        </button>
+    </form>
+
+    <div style="margin-top: 1.5rem;">
+        <a href="{{ url_for('home') }}" style="color: #6c757d; text-decoration: none;">⬅️ Back to Home</a>
+    </div>
+</div>
+{% endblock %}
