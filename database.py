@@ -8,21 +8,26 @@ from io import BytesIO
 
 class UserDB:
     def __init__(self, db_path=None):
+        # ✅ Define database path automatically
         if db_path is None:
-            if os.environ.get('RAILWAY_ENVIRONMENT'):
-                db_path = '/data/users.db'
-                os.makedirs('/data', exist_ok=True)
-            else:
-                db_path = 'instance/users.db'
-                os.makedirs('instance', exist_ok=True)
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            db_dir = os.path.join(base_dir, "instance")
+            os.makedirs(db_dir, exist_ok=True)
+            db_path = os.path.join(db_dir, "users.db")
 
         self.db_path = db_path
         print(f"📁 Database path: {self.db_path}")
-        self.init_database()
-        self.import_from_excel()
-        if self.is_database_empty():
-            print("🔄 Database is empty, importing from Excel...")
+
+        # ✅ Initialize database if not present
+        if not os.path.exists(self.db_path):
+            print("🆕 Database not found — creating new one...")
+            self.init_database()
             self.import_from_excel()
+        else:
+            print("✅ Database already exists.")
+            if self.is_database_empty():
+                print("🔄 Database is empty — importing from Excel...")
+                self.import_from_excel()
         else:
             print("✅ Database has data, skipping auto-import from Excel")
 
@@ -675,6 +680,7 @@ class UserDB:
         except Exception as e:
             print(f"❌ Error converting Google Drive URL: {e}")
             return url
+
 
 
 db = UserDB()
