@@ -28,8 +28,6 @@ class UserDB:
             if self.is_database_empty():
                 print("🔄 Database is empty — importing from Excel...")
                 self.import_from_excel()
-        else:
-            print("✅ Database has data, skipping auto-import from Excel")
 
     def is_database_empty(self):
         """Check if database is empty"""
@@ -684,3 +682,4 @@ class UserDB:
 
 
 db = UserDB()
+
