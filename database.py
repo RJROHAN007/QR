@@ -22,7 +22,7 @@ class UserDB:
         if not os.path.exists(self.db_path):
             print("🆕 Database not found — creating new one...")
             self.init_database()
-            self.import_from_excel()
+            self.import_from_excel(file_path)
         else:
             print("✅ Database already exists.")
             if self.is_database_empty():
@@ -682,6 +682,7 @@ class UserDB:
 
 
 db = UserDB()
+
 
 
 
