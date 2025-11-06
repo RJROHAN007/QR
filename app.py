@@ -649,28 +649,28 @@ from functools import wraps
 
 
 def hash_password(password: str) -> str:
-return hashlib.sha256(password.encode()).hexdigest()
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 # Route to show password change page
 @app.route('/admin/change_password', methods=['GET'])
 @admin_required
 def change_password_page():
-return render_template('change_password.html')
+    return render_template('change_password.html')
 
 
 # Route to update password
 @app.route('/admin/change_password', methods=['POST'])
 @admin_required
 def change_password_action():
-old = request.form.get('old_password')
-new = request.form.get('new_password')
-confirm = request.form.get('confirm_password')
+    old = request.form.get('old_password')
+    new = request.form.get('new_password')
+    confirm = request.form.get('confirm_password')
 
 
-if new != confirm:
-flash('New password and confirmation do not match!', 'danger')
-return redirect(url_for('change_password_page'))
+    if new != confirm:
+        flash('New password and confirmation do not match!', 'danger')
+        return redirect(url_for('change_password_page'))
 
 
 conn = database.get_connection()
@@ -680,12 +680,11 @@ stored = cursor.fetchone()[0]
 
 
 if hash_password(old) != stored:
-flash('Old password is incorrect!', 'danger')n return redirect(url_for('change_password_page'))
+    flash('Old password is incorrect!', 'danger')n return redirect(url_for('change_password_page'))
 
 
 new_hashed = hash_password(new)
 database.update_admin_password(conn, new_hashed)
-
 
 flash('Password updated successfully!', 'success')
 return redirect(url_for('admin_dashboard'))
@@ -704,4 +703,5 @@ if __name__ == '__main__':
 
 
     app.run(host='0.0.0.0', port=port, debug=debug)
+
 
