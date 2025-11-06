@@ -27,7 +27,7 @@ class UserDB:
             print("✅ Database already exists.")
             if self.is_database_empty():
                 print("🔄 Database is empty — importing from Excel...")
-                self.import_from_excel()
+                self.import_from_excel(file_path)
 
     def is_database_empty(self):
         """Check if database is empty"""
@@ -682,5 +682,6 @@ class UserDB:
 
 
 db = UserDB()
+
 
 
