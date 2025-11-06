@@ -99,7 +99,7 @@ class UserDB:
         conn.close()
         print("✅ Database initialized successfully with new schema")
 
-    def import_from_excel(self, file_path='users.xlsx'):
+    def import_from_excel(self, file_path):
         """Import user data from Excel file - UPDATED FOR NEW FORMAT"""
         try:
             if not os.path.exists(file_path):
@@ -682,4 +682,5 @@ class UserDB:
 
 
 db = UserDB()
+
 
