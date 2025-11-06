@@ -641,7 +641,7 @@ def secure_login(token):
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 8080))
     debug = os.environ.get('DEBUG', 'False').lower() == 'true'
 
     print("🚀 Starting User QR System...")
@@ -651,5 +651,6 @@ if __name__ == '__main__':
     print("👨‍💼 Admin Panel: /admin/login")
     print("🔑 Default Admin: username='admin', password='admin123'")
     print("👤 Default User Password: 123456")
+
 
     app.run(host='0.0.0.0', port=port, debug=debug)
