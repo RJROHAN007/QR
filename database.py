@@ -678,10 +678,16 @@ class UserDB:
         except Exception as e:
             print(f"❌ Error converting Google Drive URL: {e}")
             return url
+    def update_admin_password(conn, new_hashed_password):
+        cursor = conn.cursor()
+        cursor.execute("UPDATE admin SET password=? WHERE id=1", (new_hashed_password,))
+        conn.commit()
+        return True
 
 
 
 db = UserDB()
+
 
 
 
